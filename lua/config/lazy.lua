@@ -45,6 +45,7 @@ require("lazy").setup({
 	},
 	performance = {
 		rtp = {
+			reset = false,
 			disabled_plugins = vim.g.disabled_plugins,
 		},
 	},
@@ -56,10 +57,10 @@ require("lazy").setup({
 
 -- lazy.nvim will reset the runtime path due to config
 -- insert this config to the runtime path
-if vim.fn.exists("g:cfg_path") == 0 then
-	vim.notify("miss g:cfg_path, some functions will miss", vim.log.levels.ERROR)
-	vim.g.cfg_path = ""
-end
-local rtp = vim.opt.rtp:get()
-table.insert(rtp, 2, vim.g.cfg_path)
-vim.opt.rtp = rtp
+--if vim.fn.exists("g:cfg_path") == 0 then
+--	vim.notify("miss g:cfg_path, some functions will miss", vim.log.levels.ERROR)
+--	vim.g.cfg_path = ""
+--end
+--local rtp = vim.opt.rtp:get()
+--table.insert(rtp, 2, vim.g.cfg_path)
+--vim.opt.rtp = rtp

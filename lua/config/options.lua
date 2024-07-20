@@ -30,8 +30,11 @@ if vim.fn.has('syntax') == 1 then
   ]])
 end
 
--- round indent to multiple of 'shiftwidth' (default 8, length of a tab)
+-- round indent to multiple of 'shiftwidth' (default is the length of a tab)
 vim.opt.shiftround = true
+vim.opt.tabstop = 4
+vim.opt.shiftwidth = 4
+vim.opt.softtabstop = 4
 
 -- show the matching brackets
 vim.opt.showmatch = true

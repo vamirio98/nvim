@@ -1,5 +1,9 @@
 return {
 	{
+		"nvim-tree/nvim-web-devicons",
+	},
+
+	{
 		"folke/which-key.nvim",
 		event = "VeryLazy",
 		init = function()
@@ -11,6 +15,7 @@ return {
 
 	{
 		"akinsho/bufferline.nvim",
+		priority = 30,
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
 		},
@@ -19,7 +24,9 @@ return {
 				right_mouse_command = "vertical sbuffer %d",
 			},
 		},
-		init = function()
+		config = function(_, opts)
+			require("bufferline").setup(opts)
+
 			local keyset = vim.keymap.set
 			keyset("n", "gb", "<Cmd>BufferLinePick<CR>", { desc = "To buffer", silent = true })
 			keyset("n", "gB", "<Cmd>BufferLinePickClose<CR>", { desc = "Close buffer", silent = true })
@@ -67,6 +74,13 @@ return {
 				pattern = "*",
 				command = "FloatermKill!",
 			})
+
+			-- ui
+			vim.g.floaterm_borderchars = "─│─│╭╮╯╰"
+		end,
+		config = function()
+			-- ui
+			vim.api.nvim_exec2([[highlight FloatermBorder guibg=NONE]], {})
 		end,
 	},
 
@@ -130,37 +144,5 @@ return {
 
 	{
 		"MunifTanjim/nui.nvim",
-		init = function()
-			local keyset = vim.keymap.set
-
-			keyset("n", "<space>m", function()
-				local Popup = require("nui.popup")
-				local event = require("nui.utils.autocmd").event
-
-				local popup = Popup({
-					enter = true,
-					focusable = true,
-					border = {
-						style = "rounded",
-					},
-					position = "50%",
-					size = {
-						width = "80%",
-						height = "60%",
-					},
-				})
-
-				-- mount/open the component
-				popup:mount()
-
-				-- unmount component when cursor leaves buffer
-				popup:on(event.BufLeave, function()
-					popup:unmount()
-				end)
-
-				-- set content
-				vim.api.nvim_buf_set_lines(popup.bufnr, 0, 1, false, { "Hello World" })
-			end)
-		end,
 	},
 }

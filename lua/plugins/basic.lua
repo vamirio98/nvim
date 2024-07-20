@@ -38,14 +38,21 @@ return {
 
 	{
 		"smoka7/hop.nvim",
-		init = function()
+		priority = 30,
+		opts = {},
+		config = function(_, opts)
+			require("hop").setup(opts)
+
 			local keyset = vim.keymap.set
 			keyset({ "n", "v" }, "<leader>f", "<Cmd>HopChar1<CR>", {
 				silent = true,
 				desc = "Hop 1 char",
 			})
+			keyset({ "n", "v" }, "<leader>l", "<Cmd>HopLine<CR>", {
+				silent = true,
+				desc = "Hop line",
+			})
 		end,
-		opts = {},
 	},
 
 	{

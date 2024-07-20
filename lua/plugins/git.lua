@@ -52,7 +52,7 @@ return {
 				map("n", "<leader>hD", function()
 					gitsigns.diffthis("~")
 				end, { desc = "Diff with HEAD~" })
-				map("n", "<leader>td", gitsigns.toggle_deleted, { desc = "Toggle deleted" })
+				map("n", "<leader>td", gitsigns.toggle_deleted, { desc = "Show/hide the old version of hunks" })
 
 				-- Text object
 				map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "Select hunk" })

@@ -45,6 +45,7 @@ return {
 			vim.g.gutentags_auto_add_gtags_cscope = 0
 		end,
 	},
+
 	{
 		"skywind3000/gutentags_plus",
 		dependencies = {

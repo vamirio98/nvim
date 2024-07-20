@@ -1,27 +1,15 @@
 return {
 	{
 		"nvim-telescope/telescope.nvim",
+		priority = 30,
 		dependencies = {
 			"nvim-lua/plenary.nvim",
 			"nvim-telescope/telescope-fzf-native.nvim",
 		},
-		init = function()
-			local keyset = vim.keymap.set
-			local builtin = require("telescope.builtin")
-			keyset("n", "<space>ff", builtin.find_files, {})
-			keyset("n", "<space>fg", builtin.live_grep, {})
-			keyset("n", "<space>fb", builtin.buffers, {})
-			keyset("n", "<space>fc", builtin.commands, {})
-			keyset("n", "<space>ft", builtin.tags, {})
-			keyset("n", "<space>fr", builtin.oldfiles, {})
-			keyset("n", "<space>fh", builtin.help_tags, {})
-			keyset("n", "<space>fs", "<Cmd>Telescope<CR>", {})
-
-			-- enable telescope-fzf-native extension
-			require("telescope").load_extension("fzf")
-		end,
 		opts = {
 			defaults = {
+				layout_config = { prompt_position = "top" },
+				sorting_strategy = "ascending",
 				mappings = {
 					i = {
 						["<C-j>"] = require("telescope.actions").move_selection_next,
@@ -35,6 +23,23 @@ return {
 				},
 			},
 		},
+		config = function(_, opts)
+			local keyset = vim.keymap.set
+			local builtin = require("telescope.builtin")
+			keyset("n", "<space>ff", builtin.find_files, { desc = "Search file" })
+			keyset("n", "<space>fg", builtin.live_grep, { desc = "Search string (grep)" })
+			keyset("n", "<space>fb", builtin.buffers, { desc = "Search buffer" })
+			keyset("n", "<space>fC", builtin.commands, { desc = "Search command" })
+			keyset("n", "<space>ft", builtin.tags, { desc = "Search tag" })
+			keyset("n", "<space>fr", builtin.oldfiles, { desc = "Search recently used files" })
+			keyset("n", "<space>fh", builtin.help_tags, { desc = "Search help" })
+			keyset("n", "<space>fs", "<Cmd>Telescope<CR>", { desc = "Open telescope" })
+
+			require("telescope").setup(opts)
+
+			-- enable telescope-fzf-native extension
+			require("telescope").load_extension("fzf")
+		end,
 	},
 
 	{

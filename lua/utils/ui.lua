@@ -1,7 +1,5 @@
 local M = {}
 
-function M.message(content) end
-
 function M.set_local_indent(size)
 	vim.opt_local.tabstop = size
 	vim.opt_local.shiftwidth = size
