@@ -22,6 +22,9 @@ return {
 		opts = {
 			options = {
 				right_mouse_command = "vertical sbuffer %d",
+				numbers = function(opts)
+					return string.format("%s", opts.raise(opts.ordinal))
+				end,
 			},
 		},
 		config = function(_, opts)
@@ -32,6 +35,16 @@ return {
 			keyset("n", "gB", "<Cmd>BufferLinePickClose<CR>", { desc = "Close buffer", silent = true })
 			keyset("n", "[b", "<Cmd>BufferLineCyclePrev<CR>", { desc = "To prev buffer", silent = true })
 			keyset("n", "]b", "<Cmd>BufferLineCycleNext<CR>", { desc = "To next buffer", silent = true })
+
+			for i = 1, 9 do
+				keyset("n", "<leader>" .. i, function()
+					require("bufferline").go_to(i, true)
+				end, { desc = "which_key_ignore" })
+			end
+			-- go to the last buffer
+			keyset("n", "<leader>0", function()
+				require("bufferline").go_to(-1, true)
+			end, { desc = "which_key_ignore" })
 		end,
 	},
 
