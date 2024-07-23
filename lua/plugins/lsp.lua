@@ -1,217 +1,295 @@
 return {
-	"neoclide/coc.nvim",
-	priority = 30,
-	branch = "release",
-	config = function()
-		-- some servers have issues with backup files
-		vim.opt.backup = false
-		vim.opt.writebackup = false
+	{
+		"abecodes/tabout.nvim",
+		priority = 30,
+		opts = {},
+		config = function(_, opts)
+			require("tabout").setup(opts)
 
-		vim.opt.updatetime = 300
+			-- for multiline
+			local keyset = vim.keymap.set
+			keyset("i", "<M-n>", "<Plug>(TaboutMulti)", { silent = true, desc = "Multiline tabout" })
+		end,
+	},
 
-		vim.opt.signcolumn = "yes"
+	{
+		"honza/vim-snippets",
+	},
 
-		local keyset = vim.keymap.set
+	{
+		"SirVer/ultisnips",
+		dependencies = {
+			"honza/vim-snippets",
+		},
+		init = function()
+			vim.g.UltiSnipsSnippetDirectories = {
+				"UltiSnips",
+			}
+			vim.g.UltiSnipsExpandTrigger = "<Plug>(ultisnips_expand)"
+			vim.g.UltiSnipsJumpForwardTrigger = "<Plug>(ultisnips_jump_forward)"
+			vim.g.UltiSnipsJumpBackwardTrigger = "<Plug>(ultisnips_jump_backward)"
+			vim.g.UltiSnipsListSnippets = "<C-x><C-s>"
+			vim.g.UltiSnipsRemoveSelectModeMappings = 0
+		end,
+	},
 
-		function _G.check_back_space()
-			local col = vim.fn.col(".") - 1
-			return col == 0 or vim.fn.getline("."):sub(col, col):match("%s") ~= nil
-		end
+	{
+		"hrsh7th/cmp-nvim-lsp",
+	},
 
-		local opts = { silent = true, expr = true, replace_keycodes = false }
-		keyset(
-			"i",
-			"<tab>",
-			'coc#pum#visible() ? coc#pum#next(1) : v:lua.check_back_space() ? "<TAB>" : coc#refresh()',
-			opts
-		)
-		keyset("i", "<S-tab>", [[coc#pum#visible() ? coc#pum#prev(1) : "\<C-h>"]], opts)
+	{ "hrsh7th/cmp-buffer" },
 
-		-- make <CR> to accept selected completion item or notify coc.nvim to format
-		keyset("i", "<CR>", [[coc#pum#visible() ? coc#pum#confirm() : "\<C-g>u\<CR>\<c-r>=coc#on_enter()\<CR>"]], opts)
+	{ "hrsh7th/cmp-path" },
 
-		-- toggle completion
-		keyset("i", "<C-space>", "coc#pum#visible() ? coc#pum#stop() : coc#refresh()", { silent = true, expr = true })
+	{ "hrsh7th/cmp-cmdline" },
 
-		-- navigate diagnostics
-		keyset("n", "[g", "<Plug>(coc-diagnostic-prev)", { silent = true, desc = "To next diagnostic" })
-		keyset("n", "]g", "<Plug>(coc-diagnostic-next)", { silent = true, desc = "To prev diagnostic" })
+	{
+		"quangnguyen30192/cmp-nvim-ultisnips",
+		opts = {},
+	},
 
-		-- goto code navigation
-		keyset("n", "gd", "<Plug>(coc-definition)", { silent = true, desc = "To definition" })
-		keyset("n", "gD", "<Plug>(coc-declaration)", { silent = true, desc = "To declaration" })
-		keyset("n", "gy", "<Plug>(coc-type-definition)", { silent = true, desc = "To type declaration" })
-		keyset("n", "gi", "<Plug>(coc-implementation)", { silent = true, desc = "To implementation" })
-		keyset("n", "gr", "<Plug>(coc-reference)", { silent = true, desc = "To reference" })
-
-		-- use K to show documentation in preview window
-		function _G.show_docs()
-			local cw = vim.fn.expand("<cword>")
-			if vim.fn.index({ "vim", "help" }, vim.bo.filetype) >= 0 then
-				vim.api.nvim_command("h " .. cw)
-			elseif vim.api.nvim_eval("coc#rpc#ready()") then
-				vim.fn.CocActionAsync("doHover")
-			else
-				vim.api.nvim_command("!" .. vim.o.keywordprg .. " " .. cw)
+	{
+		"hrsh7th/nvim-cmp",
+		dependencies = {
+			"neovim/nvim-lspconfig",
+			"hrsh7th/cmp-nvim-lsp",
+			"hrsh7th/cmp-buffer",
+			"hrsh7th/cmp-path",
+			"hrsh7th/cmp-cmdline",
+			"SirVer/ultisnips",
+			"quangnguyen30192/cmp-nvim-ultisnips",
+		},
+		init = function()
+			vim.opt.pumheight = 10
+		end,
+		config = function()
+			local t = function(str)
+				return vim.api.nvim_replace_termcodes(str, true, true, true)
 			end
+
+			local cmp = require("cmp")
+
+			cmp.setup({
+				snippet = {
+					-- REQUIRED - you must specify a snippet engine
+					expand = function(args)
+						vim.fn["UltiSnips#Anon"](args.body) -- For `ultisnips` users.
+						-- vim.snippet.expand(args.body) -- For native neovim snippets (Neovim v0.10+)
+					end,
+				},
+				window = {
+					-- completion = cmp.config.window.bordered(),
+					-- documentation = cmp.config.window.bordered(),
+				},
+				mapping = cmp.mapping.preset.insert({
+					["<C-l>"] = cmp.mapping(function()
+						vim.api.nvim_feedkeys(t("<Plug>(ultisnips_expand)"), "m", true)
+					end, { "i", "x" }),
+					["<Tab>"] = cmp.mapping({
+						c = function()
+							if cmp.visible() then
+								cmp.select_next_item({ behavior = cmp.SelectBehavior.Insert })
+							else
+								cmp.complete()
+							end
+						end,
+						i = function(fallback)
+							if cmp.visible() then
+								cmp.select_next_item({ behavior = cmp.SelectBehavior.Insert })
+							elseif vim.fn["UltiSnips#CanJumpForwards"]() == 1 then
+								vim.api.nvim_feedkeys(t("<Plug>(ultisnips_jump_forward)"), "m", true)
+							else
+								fallback()
+							end
+						end,
+						s = function(fallback)
+							if vim.fn["UltiSnips#CanJumpForwards"]() == 1 then
+								vim.api.nvim_feedkeys(t("<Plug>(ultisnips_jump_forward)"), "m", true)
+							else
+								fallback()
+							end
+						end,
+					}),
+					["<S-Tab>"] = cmp.mapping({
+						c = function()
+							if cmp.visible() then
+								cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
+							else
+								cmp.complete()
+							end
+						end,
+						i = function(fallback)
+							if cmp.visible() then
+								cmp.select_prev_item({ behavior = cmp.SelectBehavior.Insert })
+							elseif vim.fn["UltiSnips#CanJumpBackwards"]() == 1 then
+								return vim.api.nvim_feedkeys(t("<Plug>(ultisnips_jump_backward)"), "m", true)
+							else
+								fallback()
+							end
+						end,
+						s = function(fallback)
+							if vim.fn["UltiSnips#CanJumpBackwards"]() == 1 then
+								return vim.api.nvim_feedkeys(t("<Plug>(ultisnips_jump_backward)"), "m", true)
+							else
+								fallback()
+							end
+						end,
+					}),
+					["<Down>"] = cmp.mapping(
+						cmp.mapping.select_next_item({ behavior = cmp.SelectBehavior.Select }),
+						{ "i" }
+					),
+					["<Up>"] = cmp.mapping(
+						cmp.mapping.select_prev_item({ behavior = cmp.SelectBehavior.Select }),
+						{ "i" }
+					),
+					["<C-n>"] = cmp.mapping({
+						c = function()
+							if cmp.visible() then
+								cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+							else
+								vim.api.nvim_feedkeys(t("<Down>"), "n", true)
+							end
+						end,
+						i = function(fallback)
+							if cmp.visible() then
+								cmp.select_next_item({ behavior = cmp.SelectBehavior.Select })
+							else
+								fallback()
+							end
+						end,
+					}),
+					["<C-p>"] = cmp.mapping({
+						c = function()
+							if cmp.visible() then
+								cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+							else
+								vim.api.nvim_feedkeys(t("<Up>"), "n", true)
+							end
+						end,
+						i = function(fallback)
+							if cmp.visible() then
+								cmp.select_prev_item({ behavior = cmp.SelectBehavior.Select })
+							else
+								fallback()
+							end
+						end,
+					}),
+					["<C-b>"] = cmp.mapping(cmp.mapping.scroll_docs(-4), { "i", "c" }),
+					["<C-f>"] = cmp.mapping(cmp.mapping.scroll_docs(4), { "i", "c" }),
+					["<C-Space>"] = cmp.mapping(cmp.mapping.complete(), { "i", "c" }),
+					["<C-e>"] = cmp.mapping({ i = cmp.mapping.close(), c = cmp.mapping.close() }),
+					["<CR>"] = cmp.mapping({
+						i = function(fallback)
+							if cmp.visible() and cmp.get_active_entry() then
+								cmp.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false })
+							else
+								fallback()
+							end
+						end,
+						s = cmp.mapping.confirm({ select = true }),
+						c = cmp.mapping.confirm({ behavior = cmp.ConfirmBehavior.Replace, select = false }),
+					}),
+				}),
+				sources = cmp.config.sources({
+					{ name = "nvim_lsp" },
+					{ name = "ultisnips" }, -- For ultisnips users.
+				}, {
+					{ name = "buffer" },
+				}),
+			})
+
+			-- Use buffer source for `/` and `?` (if you enabled `native_menu`, this won't work anymore).
+			cmp.setup.cmdline({ "/", "?" }, {
+				completion = { autocomplete = false },
+				sources = {
+					{ name = "buffer", option = { keyword_pattern = [=[[^[:blank:]].*]=] } },
+				},
+			})
+
+			-- Use cmdline & path source for ':' (if you enabled `native_menu`, this won't work anymore).
+			cmp.setup.cmdline(":", {
+				completion = { autocomplete = false },
+				sources = cmp.config.sources({
+					{ name = "path" },
+				}, {
+					{ name = "cmdline" },
+				}),
+			})
+
+			-- setup completion for lsp in mason-lspconfig
+		end,
+	},
+
+	{
+		"stevearc/conform.nvim",
+		opts = {},
+	},
+
+	{
+		"williamboman/mason.nvim",
+		opts = {
+			install_root_dir = vim.fn.expand("~/.config/nvim-data/mason"),
+		},
+	},
+
+	{
+		"williamboman/mason-lspconfig.nvim",
+		opts = {},
+
+		config = function(_, opts)
+			require("mason-lspconfig").setup(opts)
+
+			-- Set up lspconfig.
+			local on_attach = function(_, bufnr)
+				local keyset = vim.keymap.set
+
+				-- goto command
+				keyset("n", "gD", vim.lsp.buf.declaration, { buffer = bufnr, silent = true, desc = "Go to declaration" })
+				keyset("n", "gd", vim.lsp.buf.definition, { buffer = bufnr, silent = true, desc = "Go to definition" })
+				keyset("n", "gy", vim.lsp.buf.type_definition, { buffer = bufnr, silent = true, desc = "Go to type definition" })
+				keyset("n", "gi", vim.lsp.buf.implementation, { buffer = bufnr, silent = true, desc = "Go to implementation" })
+				keyset("n", "gr", vim.lsp.buf.references, { buffer = bufnr, silent = true, desc = "Go to references" })
+
+				-- symbol rename
+				keyset("n", "<leader>rn", vim.lsp.buf.rename, { buffer = bufnr, silent = true, desc = "Rename symbol" })
+
+				-- formatting code
+				keyset("", "<space>fc", function()
+					require("conform").format({ async = false, lsp_fallback = true })
+				end, { buffer = bufnr, silent = true, desc = "Format code" })
+
+				-- code action
+				keyset("", "<leader>a", vim.lsp.buf.code_action
+				, { buffer = bufnr, silent = true, desc = "Apply code action" })
+			end
+
+			local capabilities = require("cmp_nvim_lsp").default_capabilities()
+			require("mason-lspconfig").setup_handlers({
+				function(server_name)
+					require("lspconfig")[server_name].setup({
+						capabilities = capabilities,
+						on_attach = on_attach,
+					})
+				end,
+				["clangd"] = function()
+					require("lspconfig")["clangd"].setup({
+						capabilities = capabilities,
+						cmd = {
+							"clangd",
+							"-header-insertion=never",
+						},
+						on_attach = on_attach,
+					})
+				end
+			})
 		end
-		keyset("n", "K", "<CMD>lua _G.show_docs()<CR>", { silent = true })
+	},
 
-		-- highlight the symbol and its references on a CursorHold event(cursor is idle)
-		vim.api.nvim_create_augroup("MyCocGroup", {})
-		vim.api.nvim_create_autocmd("CursorHold", {
-			group = "MyCocGroup",
-			command = "silent call CocActionAsync('highlight')",
-			desc = "Highlight symbol under cursor on CursorHold",
-		})
-
-		-- symbol renaming
-		keyset("n", "<leader>rn", "<Plug>(coc-rename)", { silent = true, desc = "Rename symbol" })
-
-		-- formatting code
-		keyset("x", "<space>fc", "<Plug>(coc-format-selected)", { silent = true, desc = "Format code" })
-		keyset("n", "<space>fc", "<Cmd>call CocAction('format')<CR>", { desc = "Format code" })
-
-		-- setup formatexpr specified filetype(s)
-		vim.api.nvim_create_autocmd("FileType", {
-			group = "MyCocGroup",
-			pattern = "typescript,json",
-			command = "setlocal formatexpr=CocAction('formatSelected')",
-			desc = "Setup formatexpr specified filetype(s).",
-		})
-
-		-- update signature help on jump placeholder
-		vim.api.nvim_create_autocmd("User", {
-			group = "MyCocGroup",
-			pattern = "CocJumpPlaceholder",
-			command = "call CocActionAsync('showSignatureHelp')",
-			desc = "Update signature help on jump placeholder",
-		})
-
-		-- apply codeAction to the selected region
-		-- example: `<leader>aap` for current paragraph
-		keyset(
-			"x",
-			"<leader>a",
-			"<Plug>(coc-codeaction-selected)",
-			{ silent = true, nowait = true, desc = "Apply code action for selected" }
-		)
-
-		-- remap keys for apply code actions at the cursor position.
-		keyset(
-			"n",
-			"<leader>ac",
-			"<Plug>(coc-codeaction-cursor)",
-			{ silent = true, nowait = true, desc = "Apply code action at cursor position" }
-		)
-		-- remap keys for apply source code actions for current file.
-		keyset(
-			"n",
-			"<leader>as",
-			"<Plug>(coc-codeaction-source)",
-			{ silent = true, nowait = true, desc = "Apply code action for current file" }
-		)
-		-- apply the most preferred quickfix action on the current line.
-		keyset(
-			"n",
-			"<leader>qf",
-			"<Plug>(coc-fix-current)",
-			{ silent = true, nowait = true, desc = "Apply quickfix on current line" }
-		)
-
-		-- remap keys for apply refactor code actions.
-		keyset("n", "<leader>rf", "<Plug>(coc-codeaction-refactor)", { silent = true, desc = "Refactor code" })
-		keyset("x", "<leader>rf", "<Plug>(coc-codeaction-refactor-selected)", { silent = true, desc = "Refactor code" })
-
-		-- run the Code Lens actions on the current line
-		keyset(
-			"n",
-			"<leader>cl",
-			"<Plug>(coc-codelens-action)",
-			{ silent = true, nowait = true, desc = "Run Code Lens action on current line" }
-		)
-
-		-- map function and class text objects
-		-- NOTE: requires 'textDocument.documentSymbol' support from the language server
-		keyset("x", "if", "<Plug>(coc-funcobj-i)", { silent = true, nowait = true, desc = "inner function" })
-		keyset("o", "if", "<Plug>(coc-funcobj-i)", { silent = true, nowait = true, desc = "inner function" })
-		keyset("x", "af", "<Plug>(coc-funcobj-a)", { silent = true, nowait = true, desc = "function" })
-		keyset("o", "af", "<Plug>(coc-funcobj-a)", { silent = true, nowait = true, desc = "function" })
-		keyset("x", "ic", "<Plug>(coc-classobj-i)", { silent = true, nowait = true, desc = "inner class" })
-		keyset("o", "ic", "<Plug>(coc-classobj-i)", { silent = true, nowait = true, desc = "inner class" })
-		keyset("x", "ac", "<Plug>(coc-classobj-a)", { silent = true, nowait = true, desc = "class" })
-		keyset("o", "ac", "<Plug>(coc-classobj-a)", { silent = true, nowait = true, desc = "class" })
-
-		-- remap <C-f> and <C-b> to scroll float windows/popups
-		---@diagnostic disable-next-line: redefined-local
-		local opts = { silent = true, nowait = true, expr = true }
-		keyset("n", "<C-f>", 'coc#float#has_scroll() ? coc#float#scroll(1) : "<C-f>"', opts)
-		keyset("n", "<C-b>", 'coc#float#has_scroll() ? coc#float#scroll(0) : "<C-b>"', opts)
-		keyset("i", "<C-f>", 'coc#float#has_scroll() ? "<c-r>=coc#float#scroll(1)<cr>" : "<Right>"', opts)
-		keyset("i", "<C-b>", 'coc#float#has_scroll() ? "<c-r>=coc#float#scroll(0)<cr>" : "<Left>"', opts)
-		keyset("v", "<C-f>", 'coc#float#has_scroll() ? coc#float#scroll(1) : "<C-f>"', opts)
-		keyset("v", "<C-b>", 'coc#float#has_scroll() ? coc#float#scroll(0) : "<C-b>"', opts)
-
-		-- add `:OR` command for organize imports of the current buffer
-		vim.api.nvim_create_user_command("OR", "call CocActionAsync('runCommand', 'editor.action.organizeImport')", {})
-
-		-- mappings for CoCList
-		-- code actions and coc stuff
-		-- Show all diagnostics
-		keyset(
-			"n",
-			"<space>cd",
-			":<C-u>CocList diagnostics<cr>",
-			{ silent = true, nowait = true, desc = "Show all coc diagnostics" }
-		)
-		-- Manage extensions
-		keyset(
-			"n",
-			"<space>ce",
-			":<C-u>CocList extensions<cr>",
-			{ silent = true, nowait = true, desc = "Manage coc extensions" }
-		)
-		-- Show commands
-		keyset(
-			"n",
-			"<space>cc",
-			":<C-u>CocList commands<cr>",
-			{ silent = true, nowait = true, desc = "Show coc commands" }
-		)
-		-- Find symbol of current document
-		keyset(
-			"n",
-			"<space>cs",
-			":<C-u>CocList outline<cr>",
-			{ silent = true, nowait = true, desc = "Find symbol of current document" }
-		)
-		-- Search workspace symbols
-		keyset(
-			"n",
-			"<space>cS",
-			":<C-u>CocList -I symbols<cr>",
-			{ silent = true, nowait = true, desc = "Search workspace symbols" }
-		)
-		-- Do default action for next item
-		keyset(
-			"n",
-			"<space>cj",
-			":<C-u>CocNext<cr>",
-			{ silent = true, nowait = true, desc = "Do default action for next item" }
-		)
-		-- Do default action for previous item
-		keyset(
-			"n",
-			"<space>ck",
-			":<C-u>CocPrev<cr>",
-			{ silent = true, nowait = true, desc = "Do default action for prev item" }
-		)
-		-- Resume latest coc list
-		keyset(
-			"n",
-			"<space>cp",
-			":<C-u>CocListResume<cr>",
-			{ silent = true, nowait = true, desc = "Resume latest coc list" }
-		)
-	end,
+	{
+		"neovim/nvim-lspconfig",
+		dependencies = {
+			"williamboman/mason.nvim",
+		},
+	},
 }

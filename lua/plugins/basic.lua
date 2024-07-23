@@ -1,10 +1,7 @@
 return {
 	{
-		"jiangmiao/auto-pairs",
-		init = function()
-			vim.g.AutoPairsFlyMode = 1
-			vim.g.AutoPairsShortcutBackInsert = "<M-b>"
-		end,
+		"windwp/nvim-autopairs",
+		opts = {},
 	},
 
 	{

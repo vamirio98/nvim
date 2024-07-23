@@ -141,21 +141,4 @@ return {
 	{
 		"HiPhish/rainbow-delimiters.nvim",
 	},
-
-	{
-		"stevearc/dressing.nvim",
-		opts = {
-			input = {
-				mappings = {
-					i = {
-						["<ESC>"] = "Close",
-					},
-				},
-			},
-		},
-	},
-
-	{
-		"MunifTanjim/nui.nvim",
-	},
 }
