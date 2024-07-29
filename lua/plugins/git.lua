@@ -21,7 +21,7 @@ return {
 					else
 						gitsigns.nav_hunk("next")
 					end
-				end, { desc = "To next hunk" })
+				end, { desc = "Next hunk" })
 
 				map("n", "[c", function()
 					if vim.wo.diff then
@@ -29,7 +29,7 @@ return {
 					else
 						gitsigns.nav_hunk("prev")
 					end
-				end, { desc = "To prev hunk" })
+				end, { desc = "Prev hunk" })
 
 				-- Actions
 				map("n", "<leader>hs", gitsigns.stage_hunk, { desc = "Stage hunk" })
@@ -47,12 +47,12 @@ return {
 				map("n", "<leader>hb", function()
 					gitsigns.blame_line({ full = true })
 				end, { desc = "Blame hunk" })
-				map("n", "<leader>tb", gitsigns.toggle_current_line_blame, { desc = "Toggle line blame" })
+				map("n", "<leader>hB", gitsigns.toggle_current_line_blame, { desc = "Toggle line blame" })
 				map("n", "<leader>hd", gitsigns.diffthis, { desc = "Diff this" })
 				map("n", "<leader>hD", function()
 					gitsigns.diffthis("~")
 				end, { desc = "Diff with HEAD~" })
-				map("n", "<leader>td", gitsigns.toggle_deleted, { desc = "Show/hide the old version of hunks" })
+				map("n", "<leader>ho", gitsigns.toggle_deleted, { desc = "Show/hide the old version of hunks" })
 
 				-- Text object
 				map({ "o", "x" }, "ih", ":<C-U>Gitsigns select_hunk<CR>", { desc = "Select hunk" })

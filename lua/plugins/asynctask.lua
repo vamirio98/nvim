@@ -1,7 +1,7 @@
 return {
 	{
 		"skywind3000/asyncrun.vim",
-		config = function()
+		init = function()
 			vim.g.asyncrun_rootmarks = {
 				".root",
 				".git",

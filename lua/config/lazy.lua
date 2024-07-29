@@ -37,6 +37,9 @@ require("lazy").setup({
 	install = { colorscheme = { "gruvbox" } },
 	-- automatically check for plugin updates
 	checker = { enabled = false },
+	change_detection = {
+		enabled = false,
+	},
 	pkg = {
 		cache = data_dir .. "/lazy/pkg-cache.lua",
 	},
@@ -54,13 +57,3 @@ require("lazy").setup({
 	},
 	state = data_dir .. "/lazy/state.json",
 })
-
--- lazy.nvim will reset the runtime path due to config
--- insert this config to the runtime path
---if vim.fn.exists("g:cfg_path") == 0 then
---	vim.notify("miss g:cfg_path, some functions will miss", vim.log.levels.ERROR)
---	vim.g.cfg_path = ""
---end
---local rtp = vim.opt.rtp:get()
---table.insert(rtp, 2, vim.g.cfg_path)
---vim.opt.rtp = rtp

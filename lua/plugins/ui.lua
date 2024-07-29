@@ -15,7 +15,7 @@ return {
 
 	{
 		"akinsho/bufferline.nvim",
-		priority = 30,
+		evnet = "VeryLazy",
 		dependencies = {
 			"nvim-tree/nvim-web-devicons",
 		},
@@ -33,8 +33,10 @@ return {
 			local keyset = vim.keymap.set
 			keyset("n", "gb", "<Cmd>BufferLinePick<CR>", { desc = "To buffer", silent = true })
 			keyset("n", "gB", "<Cmd>BufferLinePickClose<CR>", { desc = "Close buffer", silent = true })
-			keyset("n", "[b", "<Cmd>BufferLineCyclePrev<CR>", { desc = "To prev buffer", silent = true })
-			keyset("n", "]b", "<Cmd>BufferLineCycleNext<CR>", { desc = "To next buffer", silent = true })
+			keyset("n", "[b", "<Cmd>BufferLineCyclePrev<CR>", { desc = "Prev buffer", silent = true })
+			keyset("n", "]b", "<Cmd>BufferLineCycleNext<CR>", { desc = "Next buffer", silent = true })
+			keyset("n", "[B", "<Cmd>BufferLineMovePrev<CR>", { desc = "Move buffer prev", silent = true })
+			keyset("n", "]B", "<Cmd>BufferLineMoveNext<CR>", { desc = "Move buffer next", silent = true })
 
 			for i = 1, 9 do
 				keyset("n", "<leader>" .. i, function()
@@ -50,6 +52,7 @@ return {
 
 	{
 		"nvim-lualine/lualine.nvim",
+		event = "VeryLazy",
 		dependencies = { "nvim-tree/nvim-web-devicons" },
 		init = function()
 			vim.o.showmode = false
@@ -58,11 +61,64 @@ return {
 	},
 
 	{
-		"mhinz/vim-startify",
+		"rmagatti/auto-session",
+		dependencies = {
+			"nvim-telescope/telescope.nvim",
+		},
 		init = function()
-			vim.g.startify_enable_special = 0
-			vim.g.startify_custom_header = {}
+			vim.o.sessionoptions = "blank,buffers,curdir,folds,help,tabpages,winsize,winpos,terminal,localoptions"
 		end,
+		opts = {
+			auto_save_enabled = true,
+			auto_restore_enabled = false,
+			auto_session_suppress_dirs = {
+				"~/",
+				"/",
+			},
+			session_lens = {
+				load_on_setup = true,
+			},
+		},
+	},
+
+	{
+		"nvimdev/dashboard-nvim",
+		opts = {
+			config = {
+				header = { "Neovim" },
+				week_header = {
+					enable = true,
+				},
+				shortcut = {
+					{ desc = '󰊳 Update', group = '@property', action = 'Lazy update', key = 'u' },
+					{
+						icon = ' ',
+						icon_hl = '@variable',
+						desc = 'Files',
+						group = 'Label',
+						action = 'Telescope find_files',
+						key = 'f',
+					},
+					{
+						desc = ' Sessions',
+						group = 'DiagnosticHint',
+						action = 'Telescope session-lens',
+						key = 's',
+					},
+					{
+						desc = "",
+						action = "enew",
+						key = "i",
+					},
+					{
+						desc = "",
+						action = "quit",
+						key = "q",
+					},
+				},
+				packages = { enable = false },
+			},
+		},
 	},
 
 	{
@@ -99,20 +155,11 @@ return {
 
 	{
 		"lukas-reineke/indent-blankline.nvim",
-		main = "ibl",
-		opts = {
-			scope = { highlight = highlight },
+		dependencies = {
+			"HiPhish/rainbow-delimiters.nvim",
 		},
-		config = function()
-			local highlight = {
-				"RainbowRed",
-				"RainbowYellow",
-				"RainbowBlue",
-				"RainbowOrange",
-				"RainbowGreen",
-				"RainbowViolet",
-				"RainbowCyan",
-			}
+		main = "ibl",
+		opts = function()
 			local hooks = require("ibl.hooks")
 			-- need rainbow-delimiters.nvim
 			-- create the highlight groups in the highlight setup hook, so they are reset
@@ -127,12 +174,45 @@ return {
 				vim.api.nvim_set_hl(0, "RainbowCyan", { fg = "#56B6C2" })
 			end)
 
+			local highlight = {
+				"RainbowRed",
+				"RainbowYellow",
+				"RainbowBlue",
+				"RainbowOrange",
+				"RainbowGreen",
+				"RainbowViolet",
+				"RainbowCyan",
+			}
 			local config = require("ibl.config").default_config
 			config.indent.tab_char = config.indent.char
-			config.scope.highlight = highlight
 
-			require("ibl").setup(config)
+			return {
+				scope = { highlight = highlight },
+				exclude = {
+					filetypes = {
+						"lspinfo",
+						"packer",
+						"checkhealth",
+						"help",
+						"man",
+						"gitcommit",
+						"TelescopePrompt",
+						"TelescopeResults",
+						"",
+						"dashboard",
+						"mason",
+						"lazy",
+					},
+				},
+				indent = {
+					tab_char = config.indent.char,
+				},
+			}
+		end,
+		config = function(_, opts)
+			require("ibl").setup(opts)
 
+			local hooks = require("ibl.hooks")
 			hooks.register(hooks.type.WHITESPACE, hooks.builtin.hide_first_space_indent_level)
 			hooks.register(hooks.type.SCOPE_HIGHLIGHT, hooks.builtin.scope_highlight_from_extmark)
 		end,

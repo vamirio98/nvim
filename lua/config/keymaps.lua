@@ -18,6 +18,12 @@ vim.cmd([[
 
 keyset("n", "<M-q>", "<ESC>")
 
+-- clear search with <ESC>
+keyset({ "i", "n" }, "<ESC>", "<Cmd>noh<CR><ESC>", { desc = "Escape and clear hlsearch" })
+
+keyset({ "n", "x" }, "j", "v:count == 0 ? 'gj' : 'j'", { desc = "Down", expr = true, silent = true })
+keyset({ "n", "x" }, "k", "v:count == 0 ? 'gk' : 'k'", { desc = "Up", expr = true, silent = true })
+
 keyset("n", "<space>z", "za", { desc = "toggle fold" })
 
 -- resize window
@@ -38,4 +44,26 @@ keyset("n", "<M-J>", "<C-w>j")
 keyset("n", "<M-K>", "<C-w>k")
 keyset("n", "<M-L>", "<C-w>l")
 
-keyset("t", "<ESC>", "<C-\\><C-N>")
+-- diagnostic
+local diagnostic_goto = function(next, severity)
+	local go = next and vim.diagnostic.goto_next or vim.diagnostic.goto_prev
+	severity = severity and vim.diagnostic.severity[severity] or nil
+	return function()
+		go({ severity = severity })
+	end
+end
+keyset("n", "<leader>cd", vim.diagnostic.open_float, { desc = "Line diagnostic" })
+keyset("n", "]d", diagnostic_goto(true), { desc = "Next diagnostic" })
+keyset("n", "[d", diagnostic_goto(false), { desc = "Prev diagnostic" })
+keyset("n", "]e", diagnostic_goto(true, "ERROR"), { desc = "Next error" })
+keyset("n", "[e", diagnostic_goto(false, "ERROR"), { desc = "Prev error" })
+keyset("n", "]w", diagnostic_goto(true, "WARN"), { desc = "Next warning" })
+keyset("n", "[w", diagnostic_goto(false, "WARN"), { desc = "Prev warning" })
+
+-- terminal keymapping
+keyset("t", "<ESC><ESC>", "<C-\\><C-n>", {desc = "Enter normal mode"})
+keyset("t", "<C-h>", "<Cmd>wincmd h<CR>")
+keyset("t", "<C-j>", "<Cmd>wincmd j<CR>")
+keyset("t", "<C-k>", "<Cmd>wincmd k<CR>")
+keyset("t", "<C-l>", "<Cmd>wincmd l<CR>")
+keyset("t", "<C-/>", "<Cmd>close<CR>", { desc = "Hide terminal" })
